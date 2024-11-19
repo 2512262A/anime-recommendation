@@ -61,14 +61,25 @@ def encode_features(df):
     return df, item_profile
 
 def create_user_profile(anime_list, df, item_profile):
-    idx_list = [df.index[df['Name'] == anime][0] for anime in anime_list]
+    idx_list = []
+    
+    for anime in anime_list:
+        matches = df.index[df['Name'].str.lower() == anime.lower()].tolist()
+        if matches:
+            idx_list.append(matches[0])
+        else:
+            raise ValueError(f"Anime '{anime}' not found in the dataset. Please check the name.")
+    
+    if not idx_list:
+        raise ValueError("No valid anime found in the list. Please try again.")
+
     item_profile_csr = item_profile.tocsr()
     user_profile = vstack([item_profile_csr[idx] for idx in idx_list]).mean(axis=0)
+    
     return csr_matrix(user_profile)
 
 def recommend(anime_list, df, item_profile):
-    # Ensure consistent indexing between item_profile and DataFrame
-    df = df.reset_index(drop=True)  # Reset index to match item_profile indices
+    df = df.reset_index(drop=True)
     
     user_profile = create_user_profile(anime_list, df, item_profile)
     sim_matrix = cosine_similarity(user_profile, item_profile)
@@ -87,7 +98,7 @@ def recommend(anime_list, df, item_profile):
             if len(filtered_recs) >= 10:
                 break
         except KeyError:
-            continue  # Skip invalid indices
+            continue
 
     # Return a DataFrame with the top recommendations
     return df.iloc[filtered_recs][['Name', 'Genres', 'Synopsis', 'Image URL']]

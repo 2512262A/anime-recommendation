@@ -17,15 +17,19 @@ anime_list = [anime.strip() for anime in anime_list.split(",") if anime.strip()]
 
 if st.button("Get Recommendations"):
     if anime_list:
-        recommendations = recommend(anime_list, df, item_profile)
-        st.subheader("Top Recommendations:")
-        
-        for i, row in recommendations.iterrows():
-            st.markdown(f"### {row['Name']}")
-            st.image(row['Image URL'], width=200)  # Display anime image
-            st.markdown(f"**Genres:** {', '.join(row['Genres'])}")
-            st.markdown(f"**Synopsis:** {row['Synopsis']}")
-            st.write("---")
+        try:
+            recommendations = recommend(anime_list, df, item_profile)
+            st.subheader("Top Recommendations:")
+            
+            for i, row in recommendations.iterrows():
+                st.markdown(f"### {row['Name']}")
+                st.image(row['Image URL'], width=200)
+                st.markdown(f"**Genres:** {', '.join(row['Genres'])}")
+                st.markdown(f"**Synopsis:** {row['Synopsis']}")
+                st.write("---")
+        except ValueError as e:
+            st.error(str(e))
     else:
         st.error("Please enter at least one anime.")
+
 
