@@ -12,8 +12,13 @@ def load_and_preprocess():
 
 df, item_profile = load_and_preprocess()
 
-anime_list = st.text_input("Enter a list of your favorite anime (comma-separated):")
-anime_list = [anime.strip() for anime in anime_list.split(",") if anime.strip()]
+anime_names = sorted(df['Name'].unique())
+
+anime_list = st.multiselect(
+    "Choose your favorite anime:",
+    options=anime_names,
+    placeholder="Start typing to search..."
+)
 
 if st.button("Get Recommendations"):
     if anime_list:
