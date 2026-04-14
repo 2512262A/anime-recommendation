@@ -15,26 +15,34 @@ df, item_profile = load_and_preprocess()
 anime_names = sorted(df['Name'].unique())
 
 anime_list = st.multiselect(
-    "Choose your favorite anime:",
+    "Choose your favorite anime (max 5):",
     options=anime_names,
+    default=[],
+    max_selections=5,
     placeholder="Start typing to search..."
 )
+
+# Remove duplicates from user input (extra safety)
+anime_list = list(dict.fromkeys(anime_list))
 
 if st.button("Get Recommendations"):
     if anime_list:
         try:
             recommendations = recommend(anime_list, df, item_profile)
+
+            # Remove duplicate recommendations (by Name)
+            recommendations = recommendations.drop_duplicates(subset=["Name"])
+
             st.subheader("Top Recommendations:")
-            
-            for i, row in recommendations.iterrows():
+
+            for _, row in recommendations.iterrows():
                 st.markdown(f"### {row['Name']}")
                 st.image(row['Image URL'], width=200)
                 st.markdown(f"**Genres:** {', '.join(row['Genres'])}")
                 st.markdown(f"**Synopsis:** {row['Synopsis']}")
                 st.write("---")
+
         except ValueError as e:
             st.error(str(e))
     else:
-        st.error("Please enter at least one anime.")
-
-
+        st.error("Please select at least one anime.")
